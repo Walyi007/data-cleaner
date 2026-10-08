@@ -2,30 +2,398 @@
 /* Styles spécifiques à l'outil de nettoyage de données */
 /* Réutilise les variables du portfolio principal pour cohérence */
 
-/* Aucun style supplémentaire strictement nécessaire si tu veux utiliser uniquement ceux du portfolio */
-/* Mais voici quelques ajustements optionnels pour améliorer l'expérience */
-
-/* Amélioration des zones de prévisualisation */
-.data-preview {
-    background: var(--bg-2);
-    border-radius: var(--radius-sm);
+/* Amélioration globale de l'apparence */
+:root {
+    --accent: #22c490;
+    --accent-2: #1db882;
+    --bg-2: #0c1015;
+    --bg-3: #121821;
+    --text: #eef2f6;
+    --muted: #8b97a6;
+    --line-2: #2a3441;
+    --line: #3a4553;
+    --radius: 0.75rem;
+    --radius-sm: 0.5rem;
+    --card: rgba(12,16,21,0.6);
 }
 
-/* Effet de survol sur les boutons de téléchargement */
+/* Reset et base */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: var(--bg-2);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+/* Conteneur principal */
+.container {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+/* Header */
+header h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(120deg, #1db882 0%, #4ab8d4 45%, #c99b40 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Formulaire */
+form {
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+form label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+    color: var(--text);
+}
+
+/* Zone de saisie */
+textarea#raw_data,
+input#data_file {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-sm);
+    background: var(--bg-3);
+    color: var(--text);
+    font-family: monospace;
+    resize: vertical;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+textarea#raw_data:focus,
+input#data_file:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(34,196,144,0.2);
+}
+
+/* Label personnalisé pour l'upload */
+label[for="data_file"] {
+    position: static;
+    background: var(--accent-2);
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+label[for="data_file"]:hover {
+    background: #1a9a6f;
+}
+
+/* Options de nettoyage */
+.options-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.options-grid label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+}
+
+.options-grid input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    cursor: pointer;
+    accent-color: var(--accent);
+    border: 2px solid var(--line-2);
+    border-radius: 0.2rem;
+    transition: all 0.2s;
+}
+
+.options-grid input[type="checkbox"]:checked {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.options-grid input[type="checkbox"]:hover {
+    border-color: var(--accent);
+}
+
+/* Boutons */
+.btn-group {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.btn-solid {
+    background: linear-gradient(120deg, #1db882 0%, #4ab8d4 45%, #c99b40 100%);
+    color: white;
+}
+
 .btn-solid:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(34,196,144,0.4);
+}
+
+.btn-ghost {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    border: 1px solid var(--line-2);
+}
+
+.btn-ghost:hover {
+    background: rgba(255,255,255,0.12);
+    transform: translateY(-2px);
+}
+
+/* Résultats */
+.results-section {
+    margin-top: 2.5rem;
+}
+
+.results-section h2 {
+    color: var(--accent);
+    border-bottom: 1px solid var(--line-2);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.results-section h2::before {
+    content: "📊";
+}
+
+.results-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr 1fr;
+}
+
+.results-column {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.results-column h3 {
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+}
+
+.results-column h3 span {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.data-preview {
+    background: var(--bg-3);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--line-2);
+    max-height: 500px;
+}
+
+/* Tableau */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+th, td {
+    padding: 0.85rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line-2);
+    font-size: 0.9rem;
+}
+
+th {
+    background-color: var(--bg-2);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+tr {
+    transition: background-color 0.2s;
+}
+
+tr:hover {
+    background-color: rgba(255,255,255,0.03);
+}
+
+tr:nth-child(even) {
+    background-color: rgba(0,0,0,0.1);
+}
+
+/* Message de succès/erreur */
+.alert {
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+}
+
+.alert-error {
+    background: rgba(239,107,107,0.1);
+    border: 1px solid #ef6b6b;
+    color: #ef6b6b;
+}
+
+.alert-success {
+    background: rgba(34,196,144,0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+}
+
+.alert svg {
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+/* Bouton de téléchargement */
+.download-btn {
+    display: inline-block;
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.download-btn a {
+    background: var(--accent-2);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.download-btn a:hover {
+    background: #1a9a6f;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(34,196,144,0.3);
 }
 
-/* Responsivité supplémentaire pour petits écrans */
+/* Responsivité */
+@media (max-width: 900px) {
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .container {
+        padding: 0 1rem;
+    }
+}
+
 @media (max-width: 600px) {
     .container {
         padding: 0 1rem;
     }
+    
     form {
-        grid-template-columns: 1fr !important;
+        padding: 1.5rem;
     }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn {
+        padding: 1rem;
+        width: 100%;
+        justify-content: center;
+    }
+    
     .data-preview {
         font-size: 0.85rem;
     }
+    
+    th, td {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Animation subtle */
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.float-animate {
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Scrollbar custom */
+.data-preview::-webkit-scrollbar {
+    width: 8px;
+}
+
+.data-preview::-webkit-scrollbar-track {
+    background: var(--bg-2);
+}
+
+.data-preview::-webkit-scrollbar-thumb {
+    background: var(--line-2);
+    border-radius: 4px;
+}
+
+.data-preview::-webkit-scrollbar-thumb:hover {
+    background: var(--line);
 }

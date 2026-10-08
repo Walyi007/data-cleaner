@@ -152,7 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['clean_data'])) {
 <body>
     <div class="container">
         <header style="text-align: center; margin-bottom: 2rem;">
-            <h1 style="color: var(--accent); font-family: 'Space Grotesk', sans-serif;">🧹 Outil de Nettoyage de Données</h1>
+            <h1 class="float-animate" style="color: var(--accent); font-family: 'Space Grotesk', sans-serif;">🧹 Outil de Nettoyage de Données</h1>
             <p style="color: var(--muted); max-width: 600px; margin: 0 auto;">
                 Nettoyez vos données sales en quelques clics : doublons, espaces, formats de dates, lignes vides, etc.
                 Idéal pour préparer vos jeux de données avant analyse dans Power BI, Python ou Excel.
@@ -160,7 +160,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['clean_data'])) {
         </header>
 
         <?php if (!empty($errors)): ?>
-            <div style="background: rgba(239,107,107,0.1); border: 1px solid #ef6b6b; color: #ef6b6b; padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
+            <div class="alert alert-error">
                 <strong>Erreurs :</strong><br>
                 <?php foreach ($errors as $error): ?>
                     • <?php echo htmlspecialchars($error); ?><br>
@@ -169,7 +169,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['clean_data'])) {
         <?php endif; ?>
 
         <?php if ($successMessage): ?>
-            <div style="background: rgba(34,196,144,0.1); border: 1px solid var(--accent); color: var(--accent); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
+            <div class="alert alert-success">
                 <strong>Succès :</strong> <?php echo $successMessage; ?>
             </div>
         <?php endif; ?>
@@ -192,7 +192,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['clean_data'])) {
                 <!-- Options de nettoyage -->
                 <div>
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">Options de nettoyage</label>
-                    <div style="display: grid; gap: 0.75rem;">
+                    <div class="options-grid">
                         <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text);">
                             <input type="checkbox" name="remove_duplicates" value="1" checked>
                             <span>Supprimer les lignes dupliquées exactement</span>
@@ -230,7 +230,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['clean_data'])) {
         <!-- Résultats -->
         <?php if (!empty($cleanedData)): ?>
             <section style="margin-top: 2.5rem;">
-                <h2 style="color: var(--accent); border-bottom: 1px solid var(--line-2); padding-bottom: 0.5rem;">📊 Résultats du nettoyage</h2>
+                <h2 >📊 Résultats du nettoyage</h2>
                 
                 <div style="display: grid; gap: 1.5rem; grid-template-columns: 1fr 1fr;">
                     <!-- Avant -->
@@ -329,7 +329,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['clean_data'])) {
                 </div>
 
                 <!-- Bouton de téléchargement -->
-                <div style="text-align: center; margin-top: 1.5rem;">
+                <div class="btn-group">
                     <?php
                     // Générer le CSV pour téléchargement
                     $output = fopen('php://output', 'w');
