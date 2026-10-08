@@ -186,7 +186,7 @@ if ($apiMode) {
             'data' => $cleanedData,
             'stats' => [
                 'rows_processed' => count($cleanedData),
-                'duplicates_removed' => !empty($_POST['remove_duplicates']) ? count($originalData) - count(array_unique(array_map(\"serialize\", $cleanedData))) : 0,
+                'duplicates_removed' => !empty($_POST['remove_duplicates']) ? count($originalData) - count(array_unique(array_map('serialize', $cleanedData))) : 0,
                 'empty_rows_removed' => !empty($_POST['remove_empty_rows']) ? count($originalData) - count(array_filter($originalData, function($row) {
                     return !empty(array_filter($row, function($cell) {
                         return !is_null($cell) && $cell !== '';
@@ -225,6 +225,8 @@ function logCleaningOperation($pdo, $stats) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Outil de Nettoyage de Données</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Réutilisation des variables du portfolio pour cohérence visuelle */
         :root {
@@ -272,6 +274,7 @@ function logCleaningOperation($pdo, $stats) {
                 <?php
                 $stats = [];
                 $stats['rows_processed'] = count($cleanedData);
+                $stats['original_rows'] = count($originalData);
                 if (!empty($_POST['remove_duplicates'])) {
                     $stats['duplicates_removed'] = count($originalData) - count(array_unique(array_map("serialize", $cleanedData)));
                 }
@@ -292,21 +295,46 @@ function logCleaningOperation($pdo, $stats) {
                 ?>
                 <ul style="margin-top: 0.5rem; list-style: none; padding-left: 0; display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                     <?php if (!empty($stats['rows_processed'])): ?>
-                        <li>Lignes traitées : <?= number_format($stats['rows_processed']) ?></li>
+                        <li>
+                            Lignes traitées : <?= number_format($stats['rows_processed']) ?>
+                            <?php if ($stats['original_rows'] > 0): ?>
+                                (<?= round(($stats['rows_processed'] / $stats['original_rows']) * 100, 1) ?>% des lignes originales)
+                            <?php endif; ?>
+                        </li>
                     <?php endif; ?>
                     <?php if (!empty($stats['duplicates_removed'])): ?>
-                        <li>Doublons supprimés : <?= number_format($stats['duplicates_removed']) ?></li>
+                        <li>
+                            Doublons supprimés : <?= number_format($stats['duplicates_removed']) ?>
+                            <?php if ($stats['original_rows'] > 0): ?>
+                                (<?= round(($stats['duplicates_removed'] / $stats['original_rows']) * 100, 1) ?>% des lignes originales)
+                            <?php endif; ?>
+                        </li>
                     <?php endif; ?>
                     <?php if (!empty($stats['empty_rows_removed'])): ?>
-                        <li>Lignes vides supprimées : <?= number_format($stats['empty_rows_removed']) ?></li>
+                        <li>
+                            Lignes vides supprimées : <?= number_format($stats['empty_rows_removed']) ?>
+                            <?php if ($stats['original_rows'] > 0): ?>
+                                (<?= round(($stats['empty_rows_removed'] / $stats['original_rows']) * 100, 1) ?>% des lignes originales)
+                            <?php endif; ?>
+                        </li>
                     <?php endif; ?>
                     <?php if (!empty($stats['columns_removed'])): ?>
-                        <li>Colonnes vides supprimées : <?= number_format($stats['columns_removed']) ?></li>
+                        <li>
+                            Colonnes vides supprimées : <?= number_format($stats['columns_removed']) ?>
+                            <?php if (!empty($originalData) && count($originalData[0]) > 0): ?>
+                                (<?= round(($stats['columns_removed'] / count($originalData[0])) * 100, 1) ?>% des colonnes originales)
+                            <?php endif; ?>
+                        </li>
                     <?php endif; ?>
                     <?php if (!empty($stats['dates_standardized'])): ?>
-                        <li>Dates standardisées : <?= number_format($stats['dates_standardized']) ?></li>
+                        <li>
+                            Dates standardisées : <?= number_format($stats['dates_standardized']) ?>
+                        </li>
                     <?php endif; ?>
                 </ul>
+                <?php if ($stats['original_rows'] > 0): ?>
+                    <canvas id="cleaningChart" width="400" height="200" style="margin-top: 1rem;"></canvas>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
 

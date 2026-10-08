@@ -124,6 +124,41 @@ Si vous souhaitez sauvegarder l'historique de vos opérations de nettoyage :
    - Ajouter des statistiques détaillées (pourcentages de lignes supprimées, etc.)
    - Intégrer la visualisation basique avec Chart.js directement dans l'aperçu
 
+## 🌐 Utilisation de l'API
+
+L'outil peut également être utilisé comme une API JSON en envoyant une requête POST avec les données et les options, et en spécifiant le format JSON.
+
+Exemple avec curl :
+```bash
+curl -X POST http://localhost/data-cleaner/index.php?format=json \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": [["Nom","Âge","Date"],["Jean",25,"12/05/2023"]],
+    "options": {
+      "remove_duplicates": true,
+      "trim_whitespace": true,
+      "remove_empty_rows": true,
+      "standardize_dates": true
+    }
+  }'
+```
+
+Ou en définissant l'en-tête Accept : application/json :
+```bash
+curl -X POST http://localhost/data-cleaner/index.php \
+  -H "Accept: application/json" \
+  -d 'data=Nom,Âge,Date%0AJean,25,12/05/2023' \
+  -d 'options[remove_duplicates]=1' \
+  -d 'options[trim_whitespace]=1'
+```
+
+L'API retourne un JSON contenant :
+- `success` : boolean
+- `data` : les données nettoyées sous forme de tableau 2D
+- `stats` : statistiques du nettoyage (lignes traitées, doublons supprimés, etc.)
+
+En cas d'erreur, `success` sera faux et `errors` contiendra un tableau de messages d'erreur.
+
 ## 💡 Pourquoi cet outil pour votre profil ?
 En tant que **Data Analyst**, vous passez probablement beaucoup de temps à préparer des données. Cet outil démontre votre capacité à :
 - Transformer une compétence métier (nettoyage de données) en solution web réutilisable
