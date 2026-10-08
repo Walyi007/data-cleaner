@@ -12,6 +12,7 @@ $successMessage = "";
 $apiMode = false;
 
 // Handle JSON API request
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && 
     (isset($_GET['format']) && $_GET['format'] === 'json' || 
      isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
@@ -153,6 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && (isset($_POST['clean_data']) || $api
         }
 
         $successMessage = "Données nettoyées avec succès ! " . count($cleanedData) . " lignes traitées.";
+        $_SESSION['cleanedData'] = $cleanedData;
         
         // Log operation if DB available
         if ($pdo !== null) {
@@ -494,19 +496,9 @@ function logCleaningOperation($pdo, $stats) {
 
                 <!-- Bouton de téléchargement -->
                 <div class="btn-group">
-                    <?php
-                    // Générer le CSV pour téléchargement
-                    $output = fopen('php://output', 'w');
-                    header('Content-Type: text/csv; charset=utf-8');
-                    header('Content-Disposition: attachment; filename="donnees_nettoyees_' . date('Y-m-d_H-i-s') . '.csv"');
-                    foreach ($cleanedData as $row) {
-                        fputcsv($output, $row);
-                    }
-                    fclose($output);
-                    ?>
-                    <a href="index.php?download=cleaned" class="btn btn-solid btn-block" style="background: var(--accent-2);">
-                        ⬇️ Télécharger les données nettoyées (CSV)
-                    </a>
+                     <a href="download.php" class="btn btn-solid btn-block" style="background: var(--accent-2);">
+                         ⬇️ Télécharger les données nettoyées (CSV)
+                     </a>
                 </div>
             </section>
         <?php endif; ?>
