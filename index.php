@@ -174,6 +174,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && (isset($_POST['clean_data']) || $api
     }
 }
 
+if ($apiMode) {
+    header('Content-Type: application/json');
+    if (!empty($errors)) {
+        echo json_encode(['success' => false, 'errors' => $errors]);
+        exit;
+    }
+    if (!empty($cleanedData)) {
+        $result = [
+            'success' => true,
+            'data' => $cleanedData,
+            'stats' => [
+                'rows_processed' => count($cleanedData),
+                'duplicates_removed' => !empty($_POST['remove_duplicates']) ? count($originalData) - count(array_unique(array_map(\"serialize\", $cleanedData))) : 0,
+                'empty_rows_removed' => !empty($_POST['remove_empty_rows']) ? count($originalData) - count(array_filter($originalData, function($row) {
+                    return !empty(array_filter($row, function($cell) {
+                        return !is_null($cell) && $cell !== '';
+                    }));
+                })) : 0,
+                'columns_removed' => !empty($_POST['remove_empty_columns']) && !empty($originalData) && !empty($cleanedData) ? count($originalData[0]) - count($cleanedData[0]) : 0,
+                'dates_standardized' => !empty($_POST['standardize_dates']) ? 0 : 0, // TODO: implement actual count if needed
+            ]
+        ];
+        echo json_encode($result);
+        exit;
+    }
+    // fallback
+    echo json_encode(['success' => false, 'message' => 'No data']);
+    exit;
+}
 function logCleaningOperation($pdo, $stats) {
     $stmt = $pdo->prepare("INSERT INTO cleaning_history (operation_name, rows_processed, duplicates_removed, empty_rows_removed, columns_removed, dates_standardized, user_ip) 
                          VALUES (?, ?, ?, ?, ?, ?, ?)");
