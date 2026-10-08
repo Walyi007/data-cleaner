@@ -16,6 +16,9 @@ Parfait pour préparer vos jeux de données avant analyse dans Excel, Power BI, 
 - 🎨 Interface responsive utilisant les mêmes couleurs/typos que votre portfolio
 - 💾 Optionnel : Historique des opérations via MySQL (requiert configuration DB)
 
+- 📊 Statistiques détaillées du nettoyage (lignes traitées, doublons supprimés, etc.)
+- 🌐 API JSON pour intégration avec d'autres services (format=json ou Accept: application/json)
+
 ## 🛠️ Installation sous XAMPP (Windows)
 
 ### Étape 1 : Placer les fichiers
