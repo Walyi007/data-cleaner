@@ -4,13 +4,22 @@
 // Commentaires en français comme demandé
 
 session_start();
+require_once 'config.php';
 $cleanedData = [];
 $originalData = [];
 $errors = [];
 $successMessage = "";
+$apiMode = false;
+
+// Handle JSON API request
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && 
+    (isset($_GET['format']) && $_GET['format'] === 'json' || 
+     isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+    $apiMode = true;
+}
 
 // Traitement du formulaire soumis
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['clean_data'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && (isset($_POST['clean_data']) || $apiMode)) {
     // Récupération des données d'entrée (textarea ou fichier uploadé)
     if (!empty($_FILES['data_file']['tmp_name'])) {
         // Upload de fichier
@@ -36,6 +45,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['clean_data'])) {
         }
     }
 
+    else if ($apiMode) {
+        // Read JSON payload
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $errors[] = 'Invalid JSON payload';
+        } else {
+            if (!empty($input['data']) && is_array($input['data'])) {
+                $originalData = $input['data'];
+            } elseif (!empty($input['csv']) && is_string($input['csv'])) {
+                // Parse CSV string
+                $lines = explode(chr(10), trim($input['csv']));
+                foreach ($lines as $line) {
+                    $originalData[] = str_getcsv($line);
+                }
+            } else {
+                $errors[] = 'No data provided in JSON';
+            }
+            if (!empty($input['options']) && is_array($input['options'])) {
+                foreach ($input['options'] as $key => $value) {
+                    $_POST[$key] = $value;
+                }
+            }
+        }
+    }
     // Si nous avons des données, appliquer les nettoyages sélectionnés
     if (!empty($originalData)) {
         $cleanedData = $originalData; // Copie pour travailler dessus
@@ -120,9 +153,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['clean_data'])) {
         }
 
         $successMessage = "Données nettoyées avec succès ! " . count($cleanedData) . " lignes traitées.";
+        
+        // Log operation if DB available
+        if ($pdo !== null) {
+            $stats = [
+                'rows_processed' => count($cleanedData),
+                'duplicates_removed' => !empty($_POST['remove_duplicates']) ? count($originalData) - count(array_unique(array_map("serialize", $cleanedData))) : 0,
+                'empty_rows_removed' => !empty($_POST['remove_empty_rows']) ? count($originalData) - count(array_filter($originalData, function($row) {
+                    return !empty(array_filter($row, function($cell) {
+                        return !is_null($cell) && $cell !== '';
+                    }));
+                })) : 0,
+                'columns_removed' => !empty($_POST['remove_empty_columns']) && !empty($originalData) && !empty($cleanedData) ? count($originalData[0]) - count($cleanedData[0]) : 0,
+                'dates_standardized' => !empty($_POST['standardize_dates']) ? 0 : 0, // TODO: implement actual count if needed
+            ];
+            logCleaningOperation($pdo, $stats);
+        }
     } else {
         $errors[] = "Aucune donnée à traiter. Veuillez entrer ou uploader des données.";
     }
+}
+
+function logCleaningOperation($pdo, $stats) {
+    $stmt = $pdo->prepare("INSERT INTO cleaning_history (operation_name, rows_processed, duplicates_removed, empty_rows_removed, columns_removed, dates_standardized, user_ip) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $stmt->execute([
+        'Nettoyage de données via interface web',
+        $stats['rows_processed'] ?? 0,
+        $stats['duplicates_removed'] ?? 0,
+        $stats['empty_rows_removed'] ?? 0,
+        $stats['columns_removed'] ?? 0,
+        $stats['dates_standardized'] ?? 0,
+        $ip
+    ]);
 }
 ?>
 <!DOCTYPE html>
@@ -171,6 +235,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['clean_data'])) {
         <?php if ($successMessage): ?>
             <div class="alert alert-success">
                 <strong>Succès :</strong> <?php echo $successMessage; ?>
+            </div>
+        <?php endif; ?>
+        <?php if (!empty($cleanedData)): ?>
+            <div style="background: var(--card); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
+                <strong>Statistiques du nettoyage :</strong>
+                <?php
+                $stats = [];
+                $stats['rows_processed'] = count($cleanedData);
+                if (!empty($_POST['remove_duplicates'])) {
+                    $stats['duplicates_removed'] = count($originalData) - count(array_unique(array_map("serialize", $cleanedData)));
+                }
+                if (!empty($_POST['remove_empty_rows'])) {
+                    $stats['empty_rows_removed'] = count($originalData) - count(array_filter($originalData, function($row) {
+                        return !empty(array_filter($row, function($cell) {
+                            return !is_null($cell) && $cell !== '';
+                        }));
+                    }));
+                }
+                if (!empty($_POST['remove_empty_columns']) && !empty($originalData) && !empty($cleanedData)) {
+                    $stats['columns_removed'] = count($originalData[0]) - count($cleanedData[0]);
+                }
+                if (!empty($_POST['standardize_dates'])) {
+                    // TODO: implement actual count if needed
+                    $stats['dates_standardized'] = 0;
+                }
+                ?>
+                <ul style="margin-top: 0.5rem; list-style: none; padding-left: 0; display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <?php if (!empty($stats['rows_processed'])): ?>
+                        <li>Lignes traitées : <?= number_format($stats['rows_processed']) ?></li>
+                    <?php endif; ?>
+                    <?php if (!empty($stats['duplicates_removed'])): ?>
+                        <li>Doublons supprimés : <?= number_format($stats['duplicates_removed']) ?></li>
+                    <?php endif; ?>
+                    <?php if (!empty($stats['empty_rows_removed'])): ?>
+                        <li>Lignes vides supprimées : <?= number_format($stats['empty_rows_removed']) ?></li>
+                    <?php endif; ?>
+                    <?php if (!empty($stats['columns_removed'])): ?>
+                        <li>Colonnes vides supprimées : <?= number_format($stats['columns_removed']) ?></li>
+                    <?php endif; ?>
+                    <?php if (!empty($stats['dates_standardized'])): ?>
+                        <li>Dates standardisées : <?= number_format($stats['dates_standardized']) ?></li>
+                    <?php endif; ?>
+                </ul>
             </div>
         <?php endif; ?>
 
