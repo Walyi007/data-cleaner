@@ -505,3 +505,6 @@ function logCleaningOperation($pdo, $stats) {
     </div>
 </body>
 </html>
+
+
+
