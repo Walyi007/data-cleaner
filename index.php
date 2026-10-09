@@ -502,6 +502,7 @@ function logCleaningOperation($pdo, $stats) {
                 </div>
             </section>
         <?php endif; ?>
+            <?php require_once 'history.php'; ?>
     </div>
 </body>
 </html>
