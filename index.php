@@ -336,6 +336,47 @@ function logCleaningOperation($pdo, $stats) {
                 </ul>
                 <?php if ($stats['original_rows'] > 0): ?>
                     <canvas id="cleaningChart" width="400" height="200" style="margin-top: 1rem;"></canvas>
+                     <script>
+         const ctx = document.getElementById('cleaningChart').getContext('2d');
+         new Chart(ctx, {
+             type: 'pie',
+             data: {
+                 labels: ['Lignes traitées', 'Doublons supprimés', 'Lignes vides supprimées', 'Colonnes vides supprimées', 'Dates standardisées'],
+                 datasets: [{
+                     label: 'Statistiques de nettoyage',
+                     data: [<?= ['rows_processed'] ?>, <?= ['duplicates_removed'] ?>, <?= ['empty_rows_removed'] ?>, <?= ['columns_removed'] ?>, <?= ['dates_standardized'] ?>],
+                     backgroundColor: [
+                         'rgba(54, 162, 235, 0.5)',
+                         'rgba(255, 99, 132, 0.5)',
+                         'rgba(255, 206, 86, 0.5)',
+                         'rgba(75, 192, 192, 0.5)',
+                         'rgba(153, 102, 255, 0.5)'
+                     ],
+                     borderColor: [
+                         'rgba(54, 162, 235, 1)',
+                         'rgba(255, 99, 132, 1)',
+                         'rgba(255, 206, 86, 1)',
+                         'rgba(75, 192, 192, 1)',
+                         'rgba(153, 102, 255, 1)'
+                     ],
+                     borderWidth: 1
+                 }]
+             },
+             options: {
+                 responsive: true,
+                 maintainAspectRatio: false,
+                 plugins: {
+                     legend: {
+                         position: 'bottom',
+                     },
+                     title: {
+                         display: true,
+                         text: 'Répartition des opérations de nettoyage'
+                     }
+                 }
+             }
+         });
+     </script>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
