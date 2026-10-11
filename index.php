@@ -344,7 +344,7 @@ function logCleaningOperation($pdo, $stats) {
                  labels: ['Lignes traitées', 'Doublons supprimés', 'Lignes vides supprimées', 'Colonnes vides supprimées', 'Dates standardisées'],
                  datasets: [{
                      label: 'Statistiques de nettoyage',
-                     data: [<?= ['rows_processed'] ?>, <?= ['duplicates_removed'] ?>, <?= ['empty_rows_removed'] ?>, <?= ['columns_removed'] ?>, <?= ['dates_standardized'] ?>],
+                      data: [<?= $stats['rows_processed'] ?>, <?= $stats['duplicates_removed'] ?>, <?= $stats['empty_rows_removed'] ?>, <?= $stats['columns_removed'] ?>, <?= $stats['dates_standardized'] ?>],
                      backgroundColor: [
                          'rgba(54, 162, 235, 0.5)',
                          'rgba(255, 99, 132, 0.5)',
@@ -547,6 +547,7 @@ function logCleaningOperation($pdo, $stats) {
     </div>
 </body>
 </html>
+
 
 
 
